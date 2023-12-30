@@ -1,7 +1,7 @@
 import streamlit as st
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
-
+from langchain.text_splitter import  CharacterTextSplitter
 def get_paper_text(paper_docs):
     text = ""
     for paper in paper_docs:
@@ -9,6 +9,17 @@ def get_paper_text(paper_docs):
         for page in paper_reader.pages:
             text += page.extract_text()
     return text
+
+def get_text_chunks(raw_text):
+    text_splitter = CharacterTextSplitter(
+        separator='\n',
+        chunk_size=1000,
+        chunk_overlap=100,#Avoid losing the meaning of the chunk
+        length_function=len
+    )
+    chunks = text_splitter.split_text(raw_text)
+    return chunks
+
 
 def main():
     load_dotenv()
@@ -21,8 +32,10 @@ def main():
         if st.button("Submit"):
             with st.spinner("Vectorising"):
                 #Get the paper
-                raw_text=get_paper_text(paper_docs)
-
+                raw_text = get_paper_text(paper_docs)
+                # st.write(raw_text)
+                #chunking the text
+                text_chunks = get_text_chunks(raw_text)
 
 if __name__=='__main__':
     main()
